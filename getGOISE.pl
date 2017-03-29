@@ -25,25 +25,23 @@ while(my $line = <$filehandle>){
     if ($fh->open(">g1.csv")) {
    foreach (@resultarray){
    #file handle 
-        
    		my $gene_adaptor =Bio::EnsEMBL::Registry->get_adaptor( "human", "core","gene" );
-#Inputting the HGNC symbol if interest to obtain the GTE data
+		#Inputting the HGNC symbol if interest to obtain the GTE data
 		my @genes = @{$gene_adaptor->fetch_all_by_external_name($_)};
-		
 		foreach(@genes){
-	
 		my $gene=shift(@genes);
-    	my $gstring = feature2string($gene);
+    		my $gstring = feature2string($gene);
+			#Regex to extract the exact
 			foreach($gstring){
 				s/\(|\(\(-|\+\d\)//g|s/\(|\(\(-|\+\d//g|s/\)//g|s/\:\s/Chr/g|s/\s//g; # do the replacement
-	}	
+			}	
   				my $transcripts = $gene->get_all_Transcripts();
-    			foreach my $transcript (@{$gene->get_all_Transcripts}) {
-        			my $tstring = feature2string($transcript);
-					foreach($tstring){
+    					foreach my $transcript (@{$gene->get_all_Transcripts}) {
+        					my $tstring = feature2string($transcript);
+						foreach($tstring){
 						s/\(|\(\(-|\+\d\)//g|s/\(|\(\(-|\+\d//g|s/\)//g|s/\:\s/Chr/g|s/\s//g; # do the replacement
-		}
-		print $fh "$gstring,$tstring,";
+						}
+						print $fh "$gstring,$tstring,";
 	     				foreach my $exon ( @{ $transcript->get_all_Exons() } ) {
             				my $estring = feature2string($exon);
 							foreach($estring){
@@ -54,26 +52,20 @@ while(my $line = <$filehandle>){
 								foreach($estring){
                         			s/\,\\n/\\n/g
                         }
-
         	}
 		print $fh "\n";
           }
     }
 print $fh "$_\n\n";
 }
-
 }
 $fh->close;
-}
-
-			
+}		
 exit;
-
-
+#This subroutine gets and sets the features
     sub feature2string
 {
     my $feature = shift;
-
     my $stable_id  = $feature->stable_id();
     my $seq_region = $feature->slice->seq_region_name();
     my $start      = $feature->start();
