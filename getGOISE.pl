@@ -13,10 +13,11 @@ $registry->load_registry_from_db(
    -user => 'anonymous'
 );
 
-
+#open file or die
 my $filename = $ARGV[0];
 open(my $filehandle, '<', $filename) or die "Could not open $filename\n";
 
+#filehandling
 my @resultarray;
 while(my $line = <$filehandle>){
     chomp $line;
@@ -24,14 +25,14 @@ while(my $line = <$filehandle>){
    	my $fh = FileHandle->new;
     if ($fh->open(">g1.csv")) {
    foreach (@resultarray){
-   #file handle 
+   		#use the human gene
    		my $gene_adaptor =Bio::EnsEMBL::Registry->get_adaptor( "human", "core","gene" );
 		#Inputting the HGNC symbol if interest to obtain the GTE data
 		my @genes = @{$gene_adaptor->fetch_all_by_external_name($_)};
 		foreach(@genes){
 		my $gene=shift(@genes);
     		my $gstring = feature2string($gene);
-			#Regex to extract the exact
+			#Regex to extract the gene 
 			foreach($gstring){
 				s/\(|\(\(-|\+\d\)//g|s/\(|\(\(-|\+\d//g|s/\)//g|s/\:\s/Chr/g|s/\s//g; # do the replacement
 			}	
@@ -39,12 +40,14 @@ while(my $line = <$filehandle>){
     					foreach my $transcript (@{$gene->get_all_Transcripts}) {
         					my $tstring = feature2string($transcript);
 						foreach($tstring){
+						#Regex to extract the transcript 
 						s/\(|\(\(-|\+\d\)//g|s/\(|\(\(-|\+\d//g|s/\)//g|s/\:\s/Chr/g|s/\s//g; # do the replacement
 						}
 						print $fh "$gstring,$tstring,";
 	     				foreach my $exon ( @{ $transcript->get_all_Exons() } ) {
             				my $estring = feature2string($exon);
 							foreach($estring){
+							#Regex to extract the exon 
         						s/\(|\(\(-|\+\d\)//g|s/\(|\(\(-|\+\d//g|s/\)//g|s/\:\s/Chr/g|s/\s//g; # do the replacement
 			}
 			print $fh "$estring,";
@@ -59,6 +62,7 @@ while(my $line = <$filehandle>){
 print $fh "$_\n\n";
 }
 }
+#closing the filehandle
 $fh->close;
 }		
 exit;
